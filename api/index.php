@@ -17,7 +17,7 @@ $f3->set('DEBUG',1);
 if ((float)PCRE_VERSION<7.9)
 	trigger_error('PCRE version is out of date');
 
-$db=new \DB\SQL('mysql:host=localhost;port=3306;dbname=sims','root','root');
+$db=new \DB\SQL('mysql:host=localhost;port=3306;dbname=sims','rat','2Jr8tKH6rHZt4jTf');
 
 $CATEGORIES = $db->exec('SELECT DISTINCT category FROM points');
 $NUMSERVICES = count($CATEGORIES);
