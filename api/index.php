@@ -263,13 +263,16 @@ $f3->route('GET /utils/getGrid/@input',
         $latStep = abs(($lat2-$lat1)/$xSteps);
         $lonStep = abs(($lon2-$lon1)/$ySteps);
 
+        echo "[";
         for ($x=0; $x <= $xSteps; $x++) {
             $curX = $lat1 + ($x * $latStep);
             for ($y=0; $y <= $ySteps; $y++) {
                 $curY = $lon1 + ($y * $lonStep);
-                echo $curX.",".$curY."\n";
+                //echo "{\"lat\":\""$curX."\",\"lon\":\"".$curY."\"},";
+                echo '{"lat":"'.$curX.'","lon":"'.$curY.'"},';
             }
         }
+        echo "]";
     }
 );
 
