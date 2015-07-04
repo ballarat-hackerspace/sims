@@ -5,7 +5,7 @@ $RIDEDISTANCE = 2583; //Average distance a person can ride in 10 minutes (m)
 $DRIVEDISTANCE = 6666; //Distance that can be driven in 10 minutes based on a 40km/h average speed (m)
 
 
-$BASEURL = "http://54.153.189.148/";
+$BASEURL = "http://planr.ballarathackerspace.org.au/";
 $CLIENTURL = $BASEURL."sims/web/";
 $APIURL = $BASEURL."sims/api/";
 
