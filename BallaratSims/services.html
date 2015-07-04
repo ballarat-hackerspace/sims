@@ -42,6 +42,34 @@
         </nav>
         <h3 class="text-muted">Ballarat Sims</h3>
     </div>
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="col-sm-4">
+                Service:
+                <select id="service_type" class="form-control" onchange="update_city_heatmap()">
+                    <option value="EDU">Education</option>
+                    <option value="TOILET">Toilets</option>
+                    <option value="HOSPITAL">Hospitals</option>
+                    <option value="SHOP">Shops</option>
+                    <option value="KINDER">Kinder</option>
+                </select>
+            </div>
+
+            <div class="col-sm-4">
+                Transport:
+                <select id="transport_type" class="form-control" onchange="update_city_heatmap()">
+                    <option value="WALK">Walking</option>
+                    <option value="RIDE">Bike</option>
+                    <option value="DRIVE">Car</option>
+                </select>
+            </div>
+
+            <div class="col-sm-4">
+
+            </div>
+        </div>
+    </div>
+    <br>
     <div class="jumbotron map" style="width:100%" id="map-canvas">
         Loading your map now...
     </div>
@@ -58,6 +86,8 @@
 <script src="assets/js/jquery.js"></script>
 <script src="assets/js/heatmap.js"></script>
 <script src="assets/js/gmaps-heatmap.js"></script>
+<script src="assets/js/bootstrap.js"></script>
+
 <script src="js/plotter.js"></script>
 
 <script>
