@@ -6,6 +6,8 @@ var points = [];
 
 var map = null;
 var heatmap = null;
+var mapupdater; // Ensures that map updates don't happen too frequently
+// See. http://stackoverflow.com/questions/4338490/google-map-event-bounds-changed-triggered-multiple-times-when-dragging
 
 var service_type = 'EDU';
 var transport_type = 'WALK';
@@ -110,8 +112,19 @@ function initialize(result) {
     );
     //plot_points(map);
     heat_map();
+    google.maps.event.addListener(map, 'idle', function() {
+        heatmap.draw();
+    });
+
+    google.maps.event.addListener(map, 'idle', mapSettleTime);
+
 }
 
+
+function mapSettleTime() {
+    clearTimeout(mapupdater);
+    mapupdater=setTimeout(getMapMarkers,300);
+}
 
 function load_initial_points(){
     var data_url = "http://planr.ballarathackerspace.org.au/sims/api/services/EDU";
