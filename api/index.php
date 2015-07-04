@@ -1,5 +1,10 @@
 <?php
 
+$WALKDISTANCE = 833; //Average distance a person can walk in 10 minutes (m)
+$RIDEDISTANCE = 2583; //Average distance a person can ride in 10 minutes (m)
+$DRIVEDISTANCE = 6666; //Distance that can be driven in 10 minutes based on a 40km/h average speed (m)
+
+
 $BASEURL = "http://54.153.189.148/";
 $CLIENTURL = $BASEURL."sims/web/";
 $APIURL = $BASEURL."sims/api/";
@@ -12,6 +17,9 @@ if ((float)PCRE_VERSION<7.9)
 	trigger_error('PCRE version is out of date');
 
 $db=new \DB\SQL('mysql:host=localhost;port=3306;dbname=sims','root','root');
+
+$CATEGORIES = $db->exec('SELECT DISTINCT category FROM points');
+$NUMSERVICES = count($NUMSERVICES);
 
 // Load configuration
 $f3->config('config.ini');
@@ -96,14 +104,83 @@ $f3->route('GET /services',
 );
 
 
-$f3->route('GET /trees',
+$f3->route('GET /services/@service',
     function() {
         global $db, $f3;
-        $sql = "Select *
-                From trees";
+        $service = $f3->get('PARAMS.service');	
+        $sql = "SELECT * FROM points WHERE category='$service'";
         $rows=$db->exec($sql);
         echo json_encode($rows);
     }
 );
+
+//Retrieve a list of the nearest services from a lat/lon 
+//latlonran should be in the form of: latitude,longitude,range (in km)
+$f3->route('GET /services/within10/walking/@latlon',
+    function() {
+        global $db, $f3, $WALKDISTANCE;
+        $R=6371000; //Radius of the earth in m
+        $ran = $WALKDISTANCE;
+
+        list($lat, $lon) = explode(",",$f3->get('PARAMS.latlon'));
+        // first-cut bounding box (in degrees)
+        $maxLat = $lat + rad2deg($ran/$R);
+        $minLat = $lat - rad2deg($ran/$R);
+        // compensate for degrees longitude getting smaller with increasing latitude
+        $maxLon = $lon + rad2deg($ran/$R/cos(deg2rad($lat)));
+        $minLon = $lon - rad2deg($ran/$R/cos(deg2rad($lat)));
+        $sql = "Select DISTINCT category
+                From points
+                Where lat Between $minLat And $maxLat
+                And lon Between $minLon And $maxLon";
+        $rows=$db->exec($sql);
+        echo json_encode($rows);
+    }
+);
+
+$f3->route('GET /services/within10/riding/@latlon',
+    function() {
+        global $db, $f3, $RIDEDISTANCE;
+        $R=6371000; //Radius of the earth in m
+        $ran = $RIDEDISTANCE;
+
+        list($lat, $lon) = explode(",",$f3->get('PARAMS.latlon'));
+        // first-cut bounding box (in degrees)
+        $maxLat = $lat + rad2deg($ran/$R);
+        $minLat = $lat - rad2deg($ran/$R);
+        // compensate for degrees longitude getting smaller with increasing latitude
+        $maxLon = $lon + rad2deg($ran/$R/cos(deg2rad($lat)));
+        $minLon = $lon - rad2deg($ran/$R/cos(deg2rad($lat)));
+        $sql = "Select DISTINCT category
+                From points
+                Where lat Between $minLat And $maxLat
+                And lon Between $minLon And $maxLon";
+        $rows=$db->exec($sql);
+        echo json_encode($rows);
+    }
+);
+
+$f3->route('GET /services/within10/driving/@latlon',
+    function() {
+        global $db, $f3, $DRIVEDISTANCE;
+        $R=6371000; //Radius of the earth in m
+        $ran = $DRIVEDISTANCE;
+
+        list($lat, $lon) = explode(",",$f3->get('PARAMS.latlon'));
+        // first-cut bounding box (in degrees)
+        $maxLat = $lat + rad2deg($ran/$R);
+        $minLat = $lat - rad2deg($ran/$R);
+        // compensate for degrees longitude getting smaller with increasing latitude
+        $maxLon = $lon + rad2deg($ran/$R/cos(deg2rad($lat)));
+        $minLon = $lon - rad2deg($ran/$R/cos(deg2rad($lat)));
+        $sql = "Select DISTINCT category
+                From points
+                Where lat Between $minLat And $maxLat
+                And lon Between $minLon And $maxLon";
+        $rows=$db->exec($sql);
+        echo json_encode($rows);
+    }
+);
+
 
 $f3->run();
