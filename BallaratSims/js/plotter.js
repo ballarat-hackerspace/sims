@@ -81,31 +81,6 @@ function heat_map(map){
     heatmap.setData(heatmap_data);
 }
 
-function heat_map_gmap(map){
-
-    var heatmap_data = [];
-    points.map(function(point){
-        //weighted_point = new google.maps.visualization.WeightedLocation({location: point, weight:57});
-        //console.log(weighted_point);
-        //heatmap_data.push(weighted_point);
-        var weighted_loc = {
-            location: point,
-            weight: 57
-        };
-        heatmap_data.push(weighted_loc);
-    });
-
-    var pointArray = new google.maps.MVCArray(heatmap_data);
-
-    heatmap = new google.maps.visualization.HeatmapLayer({
-        data: pointArray,
-        radius: 100
-    });
-
-    heatmap.setMap(map);
-}
-
-
 function initialize() {
     var mapOptions = {
         zoom: 10,
@@ -113,12 +88,7 @@ function initialize() {
     }
     map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
     plot_points(map);
-    //heat_map_gmap(map);
     heat_map(map);
-
-    google.maps.event.addListener(map, 'bounds_changed', function() {
-    });
-
 }
 
 google.maps.event.addDomListener(window, 'load', initialize);
