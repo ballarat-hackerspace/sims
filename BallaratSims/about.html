@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="stylesheet" type="text/css" href="css/mapping.css"/>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="favicon.ico">
+
+    <title>Ballarat 10 Minute Planr</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="assets/css/jumbotron-narrow.css" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <!--<script src="assets/js/ie-emulation-modes-warning.js"></script> -->
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+    <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+    <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+</head>
+
+<body style="background-image: url(images/therat.jpg); background-position: center; background-size: cover; background-repeat: no-repeat">
+
+<div class="container">
+    <div class="header clearfix">
+        <nav>
+            <ul class="nav nav-pills pull-right">
+                <li role="presentation"><a href="index.html">Home</a></li>
+                <li role="presentation" class="active"><a href="about.html">About</a></li>
+            </ul>
+        </nav>
+        <h3 class="text-muted">Ballarat 10 Minute Planr</h3>
+    </div>
+
+    <div class="jumbotron blog-post ">
+        <h2 class="blog-post-title">Ballarat 10 Minute Planr</h2>
+
+        <h3>What is it?</h3>
+        <p>The Ballarat 10 Minute Planr is an app that lets you visualise the vision of Ballarat as a 10 minute city - that is, being able to travel to essential services within 10 minutes.
+        The current vision is enabled through driving, however the vision is to support 10 minutes by walking, riding, and public transport.</p>
+        <hr>
+
+
+        <h3>Who are you?</h3>
+        <p>We are Brett James, Josh Stewart, and Robert Layton from the <a href="http://www.ballarathackerspace.org.au">Ballarat Hackerspace</a>.
+        <hr>
+
+
+        <h3>What is that?</h3>
+        <p>The Ballarat Hackerspace is a place for creators, makers, and hackers from all walks of life to collaborate on projects.
+        Current projects include quadcopters, Internet of Things, software, hardware and 3D printing!</p>
+        <hr>
+
+
+        <h3>Back to the project -- what did you find?</h3>
+        <p> Our analysis showed that Ballarat is a 10 minute city by car, which is great.
+            Support for 10 minute riding is also pretty good too (weather permitting).
+            Even 10 minute walking is quite good from the CBD, but access starts to drop off outside of the CBD.
+        </p>
+        <hr>
+
+
+        <h3>How did you build it?</h3>
+        <p> The project backend is built using the fat free framework in PHP, on a LAMP stack.
+            The front-end is predominately Javascript, using JQuery, Google Maps API, and Bootstrap for UI.
+        </p>
+        <hr>
+
+
+        <h3>What datasets did you use?</h3>
+        <p> Ballarat have actively put quite a number of datasets on <a href="http://www.data.gov.au">data.gov.au</a>, including the locations of services and public facilities.
+            We used a number of these, and intend to add more services soon!
+        </p>
+        <hr>
+    </div>
+
+    <div class="jumbotron">
+        <h1>Ballarat 10 Minute Planr</h1>
+        <p class="lead">Is Ballarat a 10 minute city?<br>What is needed to make it one?<br>What about future changes?</p>
+        <img src="images/clock.png"><br>
+        <p><a class="btn btn-lg btn-success" href="services.html" role="button">Try it out!</a></p>
+    </div>
+
+
+    <footer class="footer">
+        <p>Ballarat 10 Minute Planr is a GovHack 2015 project, brought to you by the <a href="http://www.ballarathackerspace.org.au">Ballarat Hackerspace</a>!</p>
+    </footer>
+
+</div> <!-- /container -->
+
+
+<!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+<script src="assets/js/ie10-viewport-bug-workaround.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&signed_in=true&libraries=visualization,geometry"></script>
+<script src="assets/js/jquery.js"></script>
+<script src="assets/js/heatmap.js"></script>
+<script src="assets/js/gmaps-heatmap.js"></script>
+<script src="js/plotter.js"></script>
+
+<script>
+    //$(document).ready(function(){
+        // Initialise handled by google maps api
+    //});
+</script>
+</body>
+</html>
