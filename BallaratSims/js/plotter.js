@@ -7,7 +7,7 @@ points.push(new google.maps.LatLng(-37.5600, 143.8000));
 var map = null;
 var heatmap = null;
 
-function plot_points(){
+function plot_points(map){
     points.map( function(point) {
         // Draw marker
         console.log(point);
@@ -32,20 +32,64 @@ function plot_points(){
     });
 }
 
-function heat_map(){
-    var pointArray = new google.maps.MVCArray(points);
+function heat_map(map){
+    console.log("Starting heatmap");
+    heatmap = new HeatmapOverlay(map,
+        {
+            // radius should be small ONLY if scaleRadius is true (or small radius is intended)
+            "radius": 0.01,
+            "maxOpacity": 0.2,
+            // scales the radius based on map zoom
+            "scaleRadius": true,
+            // if set to false the heatmap uses the global maximum for colorization
+            // if activated: uses the data maximum within the current map boundaries
+            //   (there will always be a red spot with useLocalExtremas true)
+            "useLocalExtrema": true,
+            // which field name in your data represents the latitude - default "lat"
+            latField: 'lat',
+            // which field name in your data represents the longitude - default "lng"
+            lngField: 'lng',
+            // which field name in your data represents the data value - default "value"
+            valueField: 'count'
+        }
+    );
+
+    var data = [];
+    points.map( function(point) {
+        data.push({lat: point.lat(), lng: point.lng(), count:2});
+        console.log(data);
+    });
+
+    var heatmap_data = {
+        max: 8,
+        data: data
+    };
+
+    heatmap.setData(heatmap_data);
+}
+
+function heat_map_gmap(map){
+
+    var heatmap_data = [];
+    points.map(function(point){
+        //weighted_point = new google.maps.visualization.WeightedLocation({location: point, weight:57});
+        //console.log(weighted_point);
+        //heatmap_data.push(weighted_point);
+        var weighted_loc = {
+            location: point,
+            weight: 57
+        };
+        heatmap_data.push(weighted_loc);
+    });
+
+    var pointArray = new google.maps.MVCArray(heatmap_data);
 
     heatmap = new google.maps.visualization.HeatmapLayer({
-        data: points
+        data: pointArray,
+        radius: 100
     });
-    var gradient = [
-        'rgba(0, 255, 255, 0)',
-        'rgba(0, 0, 191, 1)',
-        'rgba(255, 0, 0, 1)'
-    ]
+
     heatmap.setMap(map);
-    heatmap.set('gradient', gradient);
-    heatmap.set('radius', getNewRadius(1000));
 }
 
 
@@ -55,87 +99,14 @@ function initialize() {
         center: points[0]
     }
     map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
-    plot_points();
-    heat_map();
+    plot_points(map);
+    //heat_map_gmap(map);
+    heat_map(map);
 
-    google.maps.event.addListener(map, 'zoom_changed', function () {
-        heatmap.setOptions({radius:getNewRadius(1000)});
+    google.maps.event.addListener(map, 'bounds_changed', function() {
     });
-}
-
-var TILE_SIZE = 256;
-
-// Conversion from meters to pixels from: view-source:http://output.jsbin.com/rorecuce/1/
-//Mercator --BEGIN--
-function bound(value, opt_min, opt_max) {
-    if (opt_min !== null) value = Math.max(value, opt_min);
-    if (opt_max !== null) value = Math.min(value, opt_max);
-    return value;
-}
-
-function degreesToRadians(deg) {
-    return deg * (Math.PI / 180);
-}
-
-function radiansToDegrees(rad) {
-    return rad / (Math.PI / 180);
-}
-
-function MercatorProjection() {
-    this.pixelOrigin_ = new google.maps.Point(TILE_SIZE / 2,
-        TILE_SIZE / 2);
-    this.pixelsPerLonDegree_ = TILE_SIZE / 360;
-    this.pixelsPerLonRadian_ = TILE_SIZE / (2 * Math.PI);
-}
-
-MercatorProjection.prototype.fromLatLngToPoint = function (latLng,
-                                                           opt_point) {
-    var me = this;
-    var point = opt_point || new google.maps.Point(0, 0);
-    var origin = me.pixelOrigin_;
-
-    point.x = origin.x + latLng.lng() * me.pixelsPerLonDegree_;
-
-    // NOTE(appleton): Truncating to 0.9999 effectively limits latitude to
-    // 89.189.  This is about a third of a tile past the edge of the world
-    // tile.
-    var siny = bound(Math.sin(degreesToRadians(latLng.lat())), - 0.9999,
-        0.9999);
-    point.y = origin.y + 0.5 * Math.log((1 + siny) / (1 - siny)) * -me.pixelsPerLonRadian_;
-    return point;
-};
-
-MercatorProjection.prototype.fromPointToLatLng = function (point) {
-    var me = this;
-    var origin = me.pixelOrigin_;
-    var lng = (point.x - origin.x) / me.pixelsPerLonDegree_;
-    var latRadians = (point.y - origin.y) / -me.pixelsPerLonRadian_;
-    var lat = radiansToDegrees(2 * Math.atan(Math.exp(latRadians)) - Math.PI / 2);
-    return new google.maps.LatLng(lat, lng);
-};
-
-//Mercator --END--
-
-function getNewRadius(desiredRadiusPerPointInMeters) {
-    var numTiles = 1 << map.getZoom();
-    var center = map.getCenter();
-    var moved = google.maps.geometry.spherical.computeOffset(center, 10000, 90); /*1000 meters to the right*/
-    var projection = new MercatorProjection();
-    var initCoord = projection.fromLatLngToPoint(center);
-    var endCoord = projection.fromLatLngToPoint(moved);
-    var initPoint = new google.maps.Point(
-        initCoord.x * numTiles,
-        initCoord.y * numTiles);
-    var endPoint = new google.maps.Point(
-        endCoord.x * numTiles,
-        endCoord.y * numTiles);
-    var pixelsPerMeter = (Math.abs(initPoint.x-endPoint.x))/10000.0;
-    var totalPixelSize = Math.floor(desiredRadiusPerPointInMeters*pixelsPerMeter);
-    console.log(totalPixelSize);
-    return totalPixelSize;
 
 }
-
 
 google.maps.event.addDomListener(window, 'load', initialize);
 
