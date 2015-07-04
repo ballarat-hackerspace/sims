@@ -16,9 +16,9 @@ var gradient = [
 ];
 
 var distances_travelled = {'WALK': 0.00833, "RIDE": 0.02583, "DRIVE": 0.06666};
-$WALKDISTANCE = 833; //Average distance a person can walk in 10 minutes (m)
-$RIDEDISTANCE = 2583; //Average distance a person can ride in 10 minutes (m)
-$DRIVEDISTANCE = 6666; //Distance that can be driven in 10 minutes based on a 40km/h average speed (m)
+
+var circle_colours = {'WALK': "#10BB33", "RIDE": "#552211", "DRIVE": "#220599"};
+
 
 
 function plot_points(map){
@@ -103,8 +103,8 @@ function initialize(result) {
             gradient: {
                 // enter n keys between 0 and 1 here
                 // for gradient color customization
-                '.9': 'green',
-                '.99': 'green'
+                '.9': circle_colours[transport_type],
+                '.99': circle_colours[transport_type]
             }
         }
     );
