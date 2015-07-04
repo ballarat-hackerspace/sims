@@ -7,6 +7,12 @@ points.push(new google.maps.LatLng(-37.5600, 143.8000));
 var map = null;
 var heatmap = null;
 
+var gradient = [
+    'rgba(0, 255, 255, 0)',
+    'rgba(255, 0, 0, 1)'
+]
+
+
 function plot_points(map){
     points.map( function(point) {
         // Draw marker
@@ -38,7 +44,7 @@ function heat_map(map){
         {
             // radius should be small ONLY if scaleRadius is true (or small radius is intended)
             "radius": 0.01,
-            "maxOpacity": 0.2,
+            "maxOpacity": 0.8,
             // scales the radius based on map zoom
             "scaleRadius": true,
             // if set to false the heatmap uses the global maximum for colorization
@@ -50,13 +56,20 @@ function heat_map(map){
             // which field name in your data represents the longitude - default "lng"
             lngField: 'lng',
             // which field name in your data represents the data value - default "value"
-            valueField: 'count'
+            valueField: 'count',
+            blur: .1,
+            gradient: {
+                // enter n keys between 0 and 1 here
+                // for gradient color customization
+                '.9': 'green',
+                '.99': 'green'
+            }
         }
     );
 
     var data = [];
     points.map( function(point) {
-        data.push({lat: point.lat(), lng: point.lng(), count:2});
+        data.push({lat: point.lat(), lng: point.lng(), count:5});
         console.log(data);
     });
 
