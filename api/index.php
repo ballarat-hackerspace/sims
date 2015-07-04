@@ -19,7 +19,7 @@ if ((float)PCRE_VERSION<7.9)
 $db=new \DB\SQL('mysql:host=localhost;port=3306;dbname=sims','root','root');
 
 $CATEGORIES = $db->exec('SELECT DISTINCT category FROM points');
-$NUMSERVICES = count($NUMSERVICES);
+$NUMSERVICES = count($CATEGORIES);
 
 // Load configuration
 $f3->config('config.ini');
@@ -133,7 +133,7 @@ $f3->route('GET /services/within10/walking/@latlon',
                 From points
                 Where lat Between $minLat And $maxLat
                 And lon Between $minLon And $maxLon";
-        $rows=$db->exec($sql);
+        $rows=$db->exec($sql,NULL,86400);
         echo json_encode($rows);
     }
 );
@@ -155,7 +155,7 @@ $f3->route('GET /services/within10/riding/@latlon',
                 From points
                 Where lat Between $minLat And $maxLat
                 And lon Between $minLon And $maxLon";
-        $rows=$db->exec($sql);
+        $rows=$db->exec($sql,NULL,86400);
         echo json_encode($rows);
     }
 );
@@ -177,10 +177,99 @@ $f3->route('GET /services/within10/driving/@latlon',
                 From points
                 Where lat Between $minLat And $maxLat
                 And lon Between $minLon And $maxLon";
-        $rows=$db->exec($sql);
+        $rows=$db->exec($sql,NULL,86400);
         echo json_encode($rows);
     }
 );
 
+$f3->route('GET /services/heat/walking/@latlon',
+    function() {
+        global $db, $f3, $WALKDISTANCE, $NUMSERVICES;
+        $R=6371000; //Radius of the earth in m
+        $ran = $WALKDISTANCE;
+
+        list($lat, $lon) = explode(",",$f3->get('PARAMS.latlon'));
+        // first-cut bounding box (in degrees)
+        $maxLat = $lat + rad2deg($ran/$R);
+        $minLat = $lat - rad2deg($ran/$R);
+        // compensate for degrees longitude getting smaller with increasing latitude
+        $maxLon = $lon + rad2deg($ran/$R/cos(deg2rad($lat)));
+        $minLon = $lon - rad2deg($ran/$R/cos(deg2rad($lat)));
+        $sql = "Select DISTINCT category
+                From points
+                Where lat Between $minLat And $maxLat
+                And lon Between $minLon And $maxLon";
+        $rows=$db->exec($sql,NULL,86400);
+        echo round((count($rows) / $NUMSERVICES)*100);
+    }
+);
+
+$f3->route('GET /services/heat/riding/@latlon',
+    function() {
+        global $db, $f3, $RIDEDISTANCE, $NUMSERVICES;
+        $R=6371000; //Radius of the earth in m
+        $ran = $RIDEDISTANCE;
+
+        list($lat, $lon) = explode(",",$f3->get('PARAMS.latlon'));
+        // first-cut bounding box (in degrees)
+        $maxLat = $lat + rad2deg($ran/$R);
+        $minLat = $lat - rad2deg($ran/$R);
+        // compensate for degrees longitude getting smaller with increasing latitude
+        $maxLon = $lon + rad2deg($ran/$R/cos(deg2rad($lat)));
+        $minLon = $lon - rad2deg($ran/$R/cos(deg2rad($lat)));
+        $sql = "Select DISTINCT category
+                From points
+                Where lat Between $minLat And $maxLat
+                And lon Between $minLon And $maxLon";
+        $rows=$db->exec($sql,NULL,86400);
+        echo round((count($rows) / $NUMSERVICES)*100);
+    }
+);
+
+$f3->route('GET /services/heat/driving/@latlon',
+    function() {
+        global $db, $f3, $DRIVEDISTANCE, $NUMSERVICES;
+        $R=6371000; //Radius of the earth in m
+        $ran = $DRIVEDISTANCE;
+
+        list($lat, $lon) = explode(",",$f3->get('PARAMS.latlon'));
+        // first-cut bounding box (in degrees)
+        $maxLat = $lat + rad2deg($ran/$R);
+        $minLat = $lat - rad2deg($ran/$R);
+        // compensate for degrees longitude getting smaller with increasing latitude
+        $maxLon = $lon + rad2deg($ran/$R/cos(deg2rad($lat)));
+        $minLon = $lon - rad2deg($ran/$R/cos(deg2rad($lat)));
+        $sql = "Select DISTINCT category
+                From points
+                Where lat Between $minLat And $maxLat
+                And lon Between $minLon And $maxLon";
+        $rows=$db->exec($sql,NULL,86400);
+        echo round((count($rows) / $NUMSERVICES)*100);
+    }
+);
+
+//Returns a list of lat/lon coordinates in a grid based on a boudning box and the number of points required
+//input is in the form lat1,lon1,lat2,lon2,x,y where
+// lat1, lon1 are the latitude and longitude of the top left point of the bounding box
+// lat2, lon2 are the latitude and longitude of the bottom right point of the boudning box
+// x, y are the number of desired grid points along each axis
+$f3->route('GET /utils/getGrid/@input',
+    function() {
+        global $f3;
+
+        list($lat1, $lon1, $lat2, $lon2, $xSteps, $ySteps) = explode(",",$f3->get('PARAMS.input'));
+
+        $latStep = abs(($lat2-$lat1)/$xSteps);
+        $lonStep = abs(($lon2-$lon1)/$ySteps);
+
+        for ($x=0; $x <= $xSteps; $x++) {
+            $curX = $lat1 + ($x * $latStep);
+            for ($y=0; $y <= $ySteps; $y++) {
+                $curY = $lon1 + ($y * $lonStep);
+                echo $curX.",".$curY."\n";
+            }
+        }
+    }
+);
 
 $f3->run();
