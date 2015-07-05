@@ -54,7 +54,9 @@ function update_map(result){
     heatmap.configure({radius: distances_travelled[transport_type]});
     heat_map();
 }
-
+        google.maps.event.addListener(map, 'drag_end', function() {
+        alert("Drag ended!!");
+    });
 
 function initialize(result) {
     points = [];
@@ -62,13 +64,15 @@ function initialize(result) {
         //points.push(new google.maps.LatLng(row['lat'], row['lon']))
         points.push({lat: row['lat'], lon: row['lon'], heat: row['heat']})
     });
-
-    var bounds = map.getBounds();
-    alert(bounds);
-        google.maps.event.addListener(map, 'zoom_changed', update_city_heatmap);
-    google.maps.event.addListener(map, 'drag_end', update_city_heatmap);
     
-    $radius = (google.maps.geometry.spherical.computeDistanceBetween(bounds.getNorthEast(), bounds.getSouthWest()) / 4000000);
+    map = null;
+    map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+    
+    var bounds = map.getBounds();
+    google.maps.event.addListener(map, 'zoom_changed', update_city_heatmap);
+    google.maps.event.addListener(map, 'dragend', update_city_heatmap);
+    
+    $radius = (google.maps.geometry.spherical.computeDistanceBetween(bounds.getNorthEast(), bounds.getSouthWest()) / 3500000);
     console.log($radius);
     
     heatmap = new HeatmapOverlay(map,
@@ -88,13 +92,15 @@ function initialize(result) {
             lngField: 'lng',
             // which field name in your data represents the data value - default "value"
             valueField: 'count',
-            blur: .5,
+            blur: .6,
             gradient: {
                 // enter n keys between 0 and 1 here
                 // for gradient color customization
                 '0.0001': 'red',
                 '0.5': 'orange',
-                '0.99': 'green'
+                '0.75': '#FBFB00',
+                '0.9': '#C3F100',
+                '0.99': '#009B00'
             }
         }
     );
@@ -132,17 +138,15 @@ function load_initial_points(){
 
 google.maps.event.addDomListener(window, 'load', load_initial_points);
 google.maps.event.addListener(map, 'zoom_changed', update_city_heatmap);
-google.maps.event.addListener(map, 'drag_end', update_city_heatmap);
+google.maps.event.addListener(map, 'dragend', update_city_heatmap);
 //google.maps.event.addListener(map, 'bounds_changed', update_city_heatmap);
 
 
 function update_city_heatmap(){
-    var mapOptions = {
+    mapOptions = {
         zoom: map.getZoom(),
         center: map.getCenter()
     };
-    map = null;
-    map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
 
     var bounds = map.getBounds();
     var NE = bounds.getNorthEast();

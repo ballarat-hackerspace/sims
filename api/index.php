@@ -11,7 +11,8 @@ $APIURL = $BASEURL."sims/api/";
 
 // Kickstart the framework
 $f3=require('lib/base.php');
-$f3->set('CACHE','memcache=localhost');
+//$f3->set('CACHE','memcache=localhost');
+$f3->set('CACHE',FALSE);
 
 $f3->set('DEBUG',1);
 if ((float)PCRE_VERSION<7.9)
@@ -190,8 +191,8 @@ function heat($method, $lat, $lon){
         $ran = $WALKDISTANCE;
         $rows = 0;
         if (strtolower($method)=="walking") { $ran = $WALKDISTANCE; }
-        else if (strtolower($method)=="riding") { $ran = $RIDEDISTANCE; }
-        else if (strtolower($method)=="driving") { $ran = $DRIVEDISTANCE; }
+        if (strtolower($method)=="riding") { $ran = $RIDEDISTANCE; }
+        if (strtolower($method)=="driving") { $ran = $DRIVEDISTANCE; }
         
         // first-cut bounding box (in degrees)
         $maxLat = $lat + rad2deg($ran/$R);
@@ -203,7 +204,8 @@ function heat($method, $lat, $lon){
                 From points
                 Where lat Between $minLat And $maxLat
                 And lon Between $minLon And $maxLon";
-        $rows=$db->exec($sql,NULL,86400);
+        //$rows=$db->exec($sql,NULL,86400);
+        $rows=$db->exec($sql);
         $value = count($rows) / $NUMSERVICES;
         if($value == 0) {$value = 0.0001;}
         return ($value);
@@ -222,9 +224,7 @@ $f3->route('GET /services/heat/walking/@latlon',
 
 $f3->route('GET /services/heat/riding/@latlon',
     function() {
-        global $db, $f3, $RIDEDISTANCE, $NUMSERVICES;
-        $R=6371000; //Radius of the earth in m
-        $ran = $RIDEDISTANCE;
+        global $db, $f3;
 
         list($lat, $lon) = explode(",",$f3->get('PARAMS.latlon'));
         echo heat("riding", $lat, $lon);
@@ -233,11 +233,10 @@ $f3->route('GET /services/heat/riding/@latlon',
 
 $f3->route('GET /services/heat/driving/@latlon',
     function() {
-        global $db, $f3, $DRIVEDISTANCE, $NUMSERVICES;
-        $R=6371000; //Radius of the earth in m
-        $ran = $DRIVEDISTANCE;
+        global $db, $f3;
 
         list($lat, $lon) = explode(",",$f3->get('PARAMS.latlon'));
+        
         echo heat("driving", $lat, $lon);
     }
 );
