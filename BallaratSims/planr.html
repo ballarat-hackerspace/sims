@@ -36,18 +36,15 @@
         <nav>
             <ul class="nav nav-pills pull-right">
                 <li role="presentation"><a href="index.html">Home</a></li>
-                <li role="presentation" class="active"><a href="services.html">Services</a></li>
-                <li role="presentation"><a href="planr.html">Planr</a></li>
+                <li role="presentation"><a href="services.html">Services</a></li>
+                <li role="presentation" class="active"><a href="planr.html">Planr</a></li>
                 <li role="presentation"><a href="heatmap.html">Heatmap</a></li>
                 <li role="presentation"><a href="about.html">About</a></li>
             </ul>
         </nav>
         <h3 class="text-muted">Ballarat 10 Minute Planr</h3>
-        <p>On this page, you can select a service and a mode of transport.
-            The map then shows you access to that service from anywhere in Ballarat.
-        </p>
-
-        <p>Click anywhere to see what othe services are available at that point too!</p>
+        <p>On this page, you can click to add a new service of a given type.
+        The map will then show the improvements to access - a 10 minute city!</p>
         <a href="#skipto"><button class="btn btn-success">Hide header</button></a>
     </div>
     <div class="container-fluid" id="skipto">
@@ -99,7 +96,7 @@
 <script src="js/plotter.js"></script>
 
 <script>
-    map_type = "services";
+    map_type = "planr";
     //$(document).ready(function(){
         // Initialise handled by google maps api
     //});

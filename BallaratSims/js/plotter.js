@@ -7,6 +7,9 @@ var points = [];
 var map = null;
 var heatmap = null;
 
+var point_marker = null;
+var new_service_point = null;
+
 var service_type = 'EDU';
 var transport_type = 'WALK';
 
@@ -19,7 +22,11 @@ var distances_travelled = {'WALK': 0.00833, "RIDE": 0.02583, "DRIVE": 0.06666};
 
 var circle_colours = {'WALK': "#A3D995", "RIDE": "#FFDAAF", "DRIVE": "#A578AD"};
 
+var transport_mode = {"WALK": "walking", "RIDE": "riding", "DRIVE": "driving"};
 
+var human_readable = {"EDU": "Education", "BUS": "Busses", "PLAYGROUND": "Playground",
+                      "HOSPITAL": "Hospitals", "TOILET": "Public Toilets",
+                      "SHOP": "Shops", "KINDER":"Kindergarten"};
 
 function plot_points(map){
     points.map( function(point) {
@@ -51,6 +58,10 @@ function heat_map(){
     points.map( function(point) {
         data.push({lat: point.lat(), lng: point.lng(), count:5});
     });
+
+    if (new_service_point != null){
+        data.push({lat: new_service_point.lat(), lng: new_service_point.lng(), count:5});
+    }
 
     var heatmap_data = {
         max: 100,
@@ -114,6 +125,12 @@ function initialize(result) {
         heatmap.draw();
     });
 
+    if (map_type == "services") {
+        google.maps.event.addListener(map, 'click', add_popup_onclick);
+    }else{
+        google.maps.event.addListener(map, 'click', add_new_service);
+    }
+
 }
 
 
@@ -139,4 +156,46 @@ function update_city_heatmap(){
         success: initialize,
         dataType: 'json'
     })
+}
+
+
+function add_popup_onclick( event ) {
+    var lat = event.latLng.lat();
+    var lon = event.latLng.lng();
+    var data_url = "http://planr.ballarathackerspace.org.au/sims/api/services/within10/" + transport_mode[transport_type] +
+                   "/" + lat + "," + lon;
+    console.log("Getting point data from " + data_url);
+    $.ajax(data_url, {
+        success: function(result){
+            if (point_marker != null){
+                point_marker.setMap(null);
+            }
+            point_marker = new google.maps.Marker({
+                position: event.latLng,
+                map: map
+            }); //end marker
+            console.log(result);
+            var result_list = "<h4>Services within 10 minutes</h4><ul style=\"text-align:left\">";
+            for (var i=0; i<result.length; i++){
+                result_list += "<li>" + human_readable[result[i]['category']] + "</li>";
+            }
+            result_list += "</ul>";
+            var infowindow = new google.maps.InfoWindow({content: "<div class='map_bg_logo'>" + result_list + "</div>"});
+            //alert( "Latitude: "+event.latLng.lat()+" "+", longitude: "+event.latLng.lng() );
+            infowindow.open(map, point_marker);
+        },
+        dataType: 'json'
+    });
+}
+
+function add_new_service(event){
+    if (point_marker != null){
+        point_marker.setMap(null);
+    }
+    new_service_point = event.latLng;
+    point_marker = new google.maps.Marker({
+        position: event.latLng,
+        map: map
+    });
+    heat_map();
 }
