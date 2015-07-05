@@ -17,11 +17,11 @@ $WALKDISTANCE = 833; //Average distance a person can walk in 10 minutes (m)
 $RIDEDISTANCE = 2583; //Average distance a person can ride in 10 minutes (m)
 $DRIVEDISTANCE = 6666; //Distance that can be driven in 10 minutes based on a 40km/h average speed (m)
 
-    var mapOptions = {
+var mapOptions = {
         zoom: 12,
         center: new google.maps.LatLng(-37.5500, 143.8500)
     };
-    map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
     
 function plot_points(map){
     points.map( function(point) {
@@ -50,8 +50,10 @@ function plot_points(map){
 function heat_map(){
     console.log("Starting heatmap");
     var data = [];
+
     points.map( function(point) {
-        data.push({lat: point.lat(), lng: point.lng(), count:5});
+        //data.push({lat: point.lat(), lng: point.lng(), count:temp});
+        data.push({lat: point.lat, lng: point.lon, count:point.heat});
     });
 
     var heatmap_data = {
@@ -60,6 +62,7 @@ function heat_map(){
     };
 
     heatmap.setData(heatmap_data);
+
 }
 
 function update_map(result){
@@ -75,10 +78,10 @@ function update_map(result){
 
 
 function initialize(result) {
-    msgbox.alert("blah");
     points = [];
     result.map(function(row){
-        points.push(new google.maps.LatLng(row['lat'], row['lon']))
+        //points.push(new google.maps.LatLng(row['lat'], row['lon']))
+        points.push({lat: row['lat'], lon: row['lon'], heat: row['heat']})
     });
 
     heatmap = new HeatmapOverlay(map,
@@ -98,12 +101,13 @@ function initialize(result) {
             lngField: 'lng',
             // which field name in your data represents the data value - default "value"
             valueField: 'count',
-            blur: .1,
+            blur: .5,
             gradient: {
                 // enter n keys between 0 and 1 here
                 // for gradient color customization
-                '.9': 'green',
-                '.99': 'green'
+                '0.0001': 'red',
+                '0.5': 'orange',
+                '0.99': 'green'
             }
         }
     );
@@ -129,7 +133,8 @@ function load_initial_points(){
     var bounds = map.getBounds();
     var NE = bounds.getNorthEast();
     var SW = bounds.getSouthWest();
-    var points_url = "http://planr.ballarathackerspace.org.au/sims/api/utils/getGrid/" + NE.lat() + "," + NE.lng() + "," + SW.lat() + "," + SW.lng() + ",10,10";
+    var points_url = "http://planr.ballarathackerspace.org.au/sims/api/utils/getGrid/" + $("#transport_type").val() + "/" + NE.lat() + "," + NE.lng() + "," + SW.lat() + "," + SW.lng() + ",15,30";
+    //var points_url = "http://planr.ballarathackerspace.org.au/sims/api/services/EDU";
     
         $.ajax(points_url, {
         success: initialize,
@@ -141,13 +146,14 @@ google.maps.event.addDomListener(window, 'load', load_initial_points);
 
 
 function update_city_heatmap(){
-    // 1 get service type
-    service_type = $("#service_type").val();
-    // 2 service type
-    transport_type = $("#transport_type").val();
-    var data_url = "http://planr.ballarathackerspace.org.au/sims/api/services/" + service_type;
-    $.ajax(data_url, {
+    var bounds = map.getBounds();
+    var NE = bounds.getNorthEast();
+    var SW = bounds.getSouthWest();
+    var points_url = "http://planr.ballarathackerspace.org.au/sims/api/utils/getGrid/" + $("#transport_type").val() + "/" + NE.lat() + "," + NE.lng() + "," + SW.lat() + "," + SW.lng() + ",15,30";
+    //var points_url = "http://planr.ballarathackerspace.org.au/sims/api/services/EDU";
+    
+        $.ajax(points_url, {
         success: initialize,
-        dataType: 'json'
-    })
+        dataType: "json"
+    });
 }

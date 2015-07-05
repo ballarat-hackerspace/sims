@@ -183,13 +183,16 @@ $f3->route('GET /services/within10/driving/@latlon',
     }
 );
 
-$f3->route('GET /services/heat/walking/@latlon',
-    function() {
-        global $db, $f3, $WALKDISTANCE, $NUMSERVICES;
+function heat($method, $lat, $lon){
+
+        global $db, $NUMSERVICES, $WALKDISTANCE, $RIDEDISTANCE, $DRIVEDISTANCE;
         $R=6371000; //Radius of the earth in m
         $ran = $WALKDISTANCE;
-
-        list($lat, $lon) = explode(",",$f3->get('PARAMS.latlon'));
+        $rows = 0;
+        if (strtolower($method)=="walking") { $ran = $WALKDISTANCE; }
+        else if (strtolower($method)=="riding") { $ran = $RIDEDISTANCE; }
+        else if (strtolower($method)=="driving") { $ran = $DRIVEDISTANCE; }
+        
         // first-cut bounding box (in degrees)
         $maxLat = $lat + rad2deg($ran/$R);
         $minLat = $lat - rad2deg($ran/$R);
@@ -201,7 +204,17 @@ $f3->route('GET /services/heat/walking/@latlon',
                 Where lat Between $minLat And $maxLat
                 And lon Between $minLon And $maxLon";
         $rows=$db->exec($sql,NULL,86400);
-        echo round((count($rows) / $NUMSERVICES)*100);
+        return (count($rows) / $NUMSERVICES);
+}
+
+
+$f3->route('GET /services/heat/walking/@latlon',
+    function() {
+        global $db, $f3;
+
+        list($lat, $lon) = explode(",",$f3->get('PARAMS.latlon'));
+        
+        echo heat("walking", $lat, $lon);
     }
 );
 
@@ -212,18 +225,7 @@ $f3->route('GET /services/heat/riding/@latlon',
         $ran = $RIDEDISTANCE;
 
         list($lat, $lon) = explode(",",$f3->get('PARAMS.latlon'));
-        // first-cut bounding box (in degrees)
-        $maxLat = $lat + rad2deg($ran/$R);
-        $minLat = $lat - rad2deg($ran/$R);
-        // compensate for degrees longitude getting smaller with increasing latitude
-        $maxLon = $lon + rad2deg($ran/$R/cos(deg2rad($lat)));
-        $minLon = $lon - rad2deg($ran/$R/cos(deg2rad($lat)));
-        $sql = "Select DISTINCT category
-                From points
-                Where lat Between $minLat And $maxLat
-                And lon Between $minLon And $maxLon";
-        $rows=$db->exec($sql,NULL,86400);
-        echo round((count($rows) / $NUMSERVICES)*100);
+        echo heat("riding", $lat, $lon);
     }
 );
 
@@ -234,18 +236,7 @@ $f3->route('GET /services/heat/driving/@latlon',
         $ran = $DRIVEDISTANCE;
 
         list($lat, $lon) = explode(",",$f3->get('PARAMS.latlon'));
-        // first-cut bounding box (in degrees)
-        $maxLat = $lat + rad2deg($ran/$R);
-        $minLat = $lat - rad2deg($ran/$R);
-        // compensate for degrees longitude getting smaller with increasing latitude
-        $maxLon = $lon + rad2deg($ran/$R/cos(deg2rad($lat)));
-        $minLon = $lon - rad2deg($ran/$R/cos(deg2rad($lat)));
-        $sql = "Select DISTINCT category
-                From points
-                Where lat Between $minLat And $maxLat
-                And lon Between $minLon And $maxLon";
-        $rows=$db->exec($sql,NULL,86400);
-        echo round((count($rows) / $NUMSERVICES)*100);
+        echo heat("driving", $lat, $lon);
     }
 );
 
@@ -254,26 +245,31 @@ $f3->route('GET /services/heat/driving/@latlon',
 // lat1, lon1 are the latitude and longitude of the top left point of the bounding box
 // lat2, lon2 are the latitude and longitude of the bottom right point of the boudning box
 // x, y are the number of desired grid points along each axis
-$f3->route('GET /utils/getGrid/@input',
+$f3->route('GET /utils/getGrid/@mode/@input',
     function() {
         global $f3;
 
         list($lat1, $lon1, $lat2, $lon2, $xSteps, $ySteps) = explode(",",$f3->get('PARAMS.input'));
 
         $latStep = abs(($lat2-$lat1)/$xSteps);
-        $lonStep = abs(($lon2-$lon1)/$ySteps);
+        $lonStep = (($lon2-$lon1)/$ySteps);
 
         echo "[";
         for ($x=0; $x <= $xSteps; $x++) {
-            $curX = $lat1 + ($x * $latStep);
+            $curX = $lat1 - ($x * $latStep);
+            if ($x > 0) { echo ","; }
             for ($y=0; $y <= $ySteps; $y++) {
+                if ($y > 0) { echo ","; }
                 $curY = $lon1 + ($y * $lonStep);
                 //echo "{\"lat\":\""$curX."\",\"lon\":\"".$curY."\"},";
-                echo '{"lat":"'.$curX.'","lon":"'.$curY.'"},';
+                //$heat = heat("walking", $curX, $curY);
+                $heat = heat($f3->get('PARAMS.input'), $curX, $curY);
+                echo '{"lat":"'.$curX.'","lon":"'.$curY.'","heat":"'.$heat.'"}';
             }
         }
         echo "]";
     }
 );
+
 
 $f3->run();
