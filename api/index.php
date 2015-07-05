@@ -204,7 +204,9 @@ function heat($method, $lat, $lon){
                 Where lat Between $minLat And $maxLat
                 And lon Between $minLon And $maxLon";
         $rows=$db->exec($sql,NULL,86400);
-        return (count($rows) / $NUMSERVICES);
+        $value = count($rows) / $NUMSERVICES;
+        if($value == 0) {$value = 0.0001;}
+        return ($value);
 }
 
 
@@ -263,7 +265,7 @@ $f3->route('GET /utils/getGrid/@mode/@input',
                 $curY = $lon1 + ($y * $lonStep);
                 //echo "{\"lat\":\""$curX."\",\"lon\":\"".$curY."\"},";
                 //$heat = heat("walking", $curX, $curY);
-                $heat = heat($f3->get('PARAMS.input'), $curX, $curY);
+                $heat = heat($f3->get('PARAMS.mode'), $curX, $curY);
                 echo '{"lat":"'.$curX.'","lon":"'.$curY.'","heat":"'.$heat.'"}';
             }
         }

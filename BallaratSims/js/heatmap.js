@@ -4,6 +4,9 @@ var points = [];
 var map = null;
 var heatmap = null;
 
+var gridX = 15;
+var gridY = 30;
+
 var service_type = 'EDU';
 var transport_type = 'WALK';
 
@@ -23,29 +26,6 @@ var mapOptions = {
     };
 map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
     
-function plot_points(map){
-    points.map( function(point) {
-        // Draw marker
-        var marker = new google.maps.Marker({
-            position: point,
-            map: map,
-            title: 'Hello World!'
-        });
-        // Draw circle around it
-        var greenCircleOptions = {
-            strokeColor: '#111100',
-            strokeOpacity: 0.4,
-            strokeWeight: 2,
-            fillColor: '#005522',
-            fillOpacity: 0.35,
-            map: map,
-            center: point,
-            radius: 1000  // In meters
-        };
-        // Add the circle for this city to the map.
-        //cityCircle = new google.maps.Circle(greenCircleOptions);
-    });
-}
 
 function heat_map(){
     console.log("Starting heatmap");
@@ -57,12 +37,11 @@ function heat_map(){
     });
 
     var heatmap_data = {
-        max: 100,
+        max: 200,
         data: data
     };
 
     heatmap.setData(heatmap_data);
-
 }
 
 function update_map(result){
@@ -84,10 +63,18 @@ function initialize(result) {
         points.push({lat: row['lat'], lon: row['lon'], heat: row['heat']})
     });
 
+    var bounds = map.getBounds();
+    alert(bounds);
+        google.maps.event.addListener(map, 'zoom_changed', update_city_heatmap);
+    google.maps.event.addListener(map, 'drag_end', update_city_heatmap);
+    
+    $radius = (google.maps.geometry.spherical.computeDistanceBetween(bounds.getNorthEast(), bounds.getSouthWest()) / 4000000);
+    console.log($radius);
+    
     heatmap = new HeatmapOverlay(map,
         {
             // radius should be small ONLY if scaleRadius is true (or small radius is intended)
-            "radius": distances_travelled[transport_type],
+            "radius": $radius,
             "maxOpacity": 0.8,
             // scales the radius based on map zoom
             "scaleRadius": true,
@@ -111,11 +98,13 @@ function initialize(result) {
             }
         }
     );
-    //plot_points(map);
+    heatmap.setMap(map);
     heat_map();
+    
     google.maps.event.addListener(map, 'idle', function() {
         heatmap.draw();
     });
+
 
 }
 
@@ -133,8 +122,7 @@ function load_initial_points(){
     var bounds = map.getBounds();
     var NE = bounds.getNorthEast();
     var SW = bounds.getSouthWest();
-    var points_url = "http://planr.ballarathackerspace.org.au/sims/api/utils/getGrid/" + $("#transport_type").val() + "/" + NE.lat() + "," + NE.lng() + "," + SW.lat() + "," + SW.lng() + ",15,30";
-    //var points_url = "http://planr.ballarathackerspace.org.au/sims/api/services/EDU";
+    var points_url = "http://planr.ballarathackerspace.org.au/sims/api/utils/getGrid/" + $("#transport_type").val() + "/" + NE.lat() + "," + NE.lng() + "," + SW.lat() + "," + SW.lng() + ","+gridX+","+gridY;
     
         $.ajax(points_url, {
         success: initialize,
@@ -143,14 +131,23 @@ function load_initial_points(){
 }
 
 google.maps.event.addDomListener(window, 'load', load_initial_points);
+google.maps.event.addListener(map, 'zoom_changed', update_city_heatmap);
+google.maps.event.addListener(map, 'drag_end', update_city_heatmap);
+//google.maps.event.addListener(map, 'bounds_changed', update_city_heatmap);
 
 
 function update_city_heatmap(){
+    var mapOptions = {
+        zoom: map.getZoom(),
+        center: map.getCenter()
+    };
+    map = null;
+    map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
+
     var bounds = map.getBounds();
     var NE = bounds.getNorthEast();
     var SW = bounds.getSouthWest();
-    var points_url = "http://planr.ballarathackerspace.org.au/sims/api/utils/getGrid/" + $("#transport_type").val() + "/" + NE.lat() + "," + NE.lng() + "," + SW.lat() + "," + SW.lng() + ",15,30";
-    //var points_url = "http://planr.ballarathackerspace.org.au/sims/api/services/EDU";
+    var points_url = "http://planr.ballarathackerspace.org.au/sims/api/utils/getGrid/" + $("#transport_type").val() + "/" + NE.lat() + "," + NE.lng() + "," + SW.lat() + "," + SW.lng() + ","+gridX+","+gridY;
     
         $.ajax(points_url, {
         success: initialize,
