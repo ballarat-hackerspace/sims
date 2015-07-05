@@ -17,7 +17,7 @@ var gradient = [
 
 var distances_travelled = {'WALK': 0.00833, "RIDE": 0.02583, "DRIVE": 0.06666};
 
-var circle_colours = {'WALK': "#10BB33", "RIDE": "#552211", "DRIVE": "#220599"};
+var circle_colours = {'WALK': "#A3D995", "RIDE": "#FFDAAF", "DRIVE": "#A578AD"};
 
 
 
@@ -32,7 +32,7 @@ function plot_points(map){
         // Draw circle around it
         var greenCircleOptions = {
             strokeColor: '#111100',
-            strokeOpacity: 0.4,
+            strokeOpacity: 0.5,
             strokeWeight: 2,
             fillColor: '#005522',
             fillOpacity: 0.35,
@@ -78,7 +78,7 @@ function initialize(result) {
         points.push(new google.maps.LatLng(row['lat'], row['lon']))
     });
     var mapOptions = {
-        zoom: 12,
+        zoom: 11,
         center: new google.maps.LatLng(-37.5500, 143.8500)
     };
     map = new google.maps.Map(document.getElementById('map-canvas'), mapOptions);
